@@ -1,3 +1,17 @@
+// ============ LOADING SCREEN ============
+window.addEventListener("load", () => {
+  const loadingScreen = document.getElementById("loading-screen");
+  if (loadingScreen) {
+    setTimeout(() => {
+      loadingScreen.classList.add("hidden");
+      document.body.style.overflow = "";
+    }, 1500);
+  }
+});
+
+// Prevent scroll during loading
+document.body.style.overflow = "hidden";
+
 // ============ AOS ============
 document.addEventListener("DOMContentLoaded", () => {
   if (typeof AOS !== "undefined") {
@@ -13,20 +27,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // ============ SCROLL EVENTS (throttled) ============
 const scrollProgress = document.getElementById("scroll-progress");
-const header        = document.getElementById("header");
-const backToTop     = document.getElementById("back-to-top");
-let   scrollTicking = false;
+const header = document.getElementById("header");
+const backToTop = document.getElementById("back-to-top");
+let scrollTicking = false;
 
 window.addEventListener("scroll", () => {
   if (!scrollTicking) {
     requestAnimationFrame(() => {
-      const scrollTop  = window.pageYOffset;
-      const docHeight  = document.documentElement.scrollHeight - window.innerHeight;
-
+      const scrollTop = window.pageYOffset;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
       if (scrollProgress) scrollProgress.style.width = ((scrollTop / docHeight) * 100) + "%";
-      if (header)         header.classList.toggle("scrolled", scrollTop > 50);
-      if (backToTop)      backToTop.classList.toggle("visible", scrollTop > 500);
-
+      if (header) header.classList.toggle("scrolled", scrollTop > 50);
+      if (backToTop) backToTop.classList.toggle("visible", scrollTop > 500);
       updateActiveNav(scrollTop);
       scrollTicking = false;
     });
@@ -36,11 +48,10 @@ window.addEventListener("scroll", () => {
 
 // ============ ACTIVE NAV ============
 function updateActiveNav(scrollPos) {
-  const sections  = document.querySelectorAll("section[id]");
-  const navLinks  = document.querySelectorAll(".nav-link");
-  const pos       = scrollPos + 160;
-  let   current   = "";
-
+  const sections = document.querySelectorAll("section[id]");
+  const navLinks = document.querySelectorAll(".nav-link");
+  const pos = scrollPos + 160;
+  let current = "";
   sections.forEach((s) => {
     if (pos >= s.offsetTop && pos < s.offsetTop + s.offsetHeight) current = s.id;
   });
@@ -49,8 +60,7 @@ function updateActiveNav(scrollPos) {
 
 // ============ MOBILE MENU ============
 const menuIcon = document.getElementById("menu-icon");
-const navbar   = document.getElementById("navbar");
-
+const navbar = document.getElementById("navbar");
 if (menuIcon && navbar) {
   menuIcon.addEventListener("click", () => {
     const open = navbar.classList.toggle("active");
@@ -92,13 +102,7 @@ document.querySelectorAll('a[href^="#"]').forEach((a) => {
 document.addEventListener("DOMContentLoaded", () => {
   if (typeof Typed !== "undefined") {
     new Typed(".multiple-text", {
-      strings: [
-        "مونتير فيديوهات ريلز",
-        "Reels Editor",
-        "Shorts Creator",
-        "TikTok Specialist",
-        "Motion Designer",
-      ],
+      strings: ["مونتير فيديوهات ريلز", "Reels Editor", "Shorts Creator", "TikTok Specialist", "Motion Designer"],
       typeSpeed: 65,
       backSpeed: 35,
       backDelay: 1800,
@@ -107,24 +111,27 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// ============ COUNTER ============
+// ============ COUNTER (Optimized) ============
 const counterObs = new IntersectionObserver((entries) => {
   entries.forEach((e) => {
     if (!e.isIntersecting) return;
-    const el     = e.target;
+    const el = e.target;
     const target = parseInt(el.dataset.count);
-    const step   = target / (1600 / 16);
-    let   cur    = 0;
-    const tick   = () => {
+    const step = target / (1200 / 16);
+    let cur = 0;
+    const tick = () => {
       cur += step;
-      if (cur < target) { el.textContent = Math.floor(cur); requestAnimationFrame(tick); }
-      else              { el.textContent = target; }
+      if (cur < target) {
+        el.textContent = Math.floor(cur);
+        requestAnimationFrame(tick);
+      } else {
+        el.textContent = target;
+      }
     };
     tick();
     counterObs.unobserve(el);
   });
 }, { threshold: 0.5 });
-
 document.querySelectorAll(".stat-number").forEach((c) => counterObs.observe(c));
 
 // ============ BACK TO TOP ============
@@ -151,10 +158,10 @@ if (window.innerWidth >= 768) {
   }
 }
 
-// ============ LIGHTBOX ============
+// ============ IMAGE LIGHTBOX ============
 (function () {
-  const overlay  = document.getElementById("lightbox-overlay");
-  const imgEl    = document.getElementById("lightbox-img");
+  const overlay = document.getElementById("lightbox-overlay");
+  const imgEl = document.getElementById("lightbox-img");
   const closeBtn = document.getElementById("lightbox-close");
   if (!overlay || !imgEl) return;
 
@@ -173,7 +180,7 @@ if (window.innerWidth >= 768) {
   document.querySelectorAll(".testimonial-screenshot").forEach((el) => {
     const img = el.querySelector("img");
     if (!img) return;
-    el.addEventListener("click",   () => open(img.src, img.alt));
+    el.addEventListener("click", () => open(img.src, img.alt));
     el.addEventListener("keydown", (e) => { if (e.key === "Enter") open(img.src, img.alt); });
   });
 
@@ -184,18 +191,39 @@ if (window.innerWidth >= 768) {
   });
 })();
 
-// ============ LAZY IMAGES ============
+// ============ LAZY LOADING FOR VIDEOS & IMAGES ============
 if ("IntersectionObserver" in window) {
-  const imgObs = new IntersectionObserver((entries) => {
+  const lazyObs = new IntersectionObserver((entries) => {
     entries.forEach((e) => {
       if (e.isIntersecting) {
-        const img = e.target;
-        if (img.dataset.src) { img.src = img.dataset.src; img.classList.add("loaded"); }
-        imgObs.unobserve(img);
+        const el = e.target;
+        if (el.dataset.src) {
+          el.src = el.dataset.src;
+          el.classList.add("loaded");
+        }
+        if (el.dataset.srcset) {
+          el.srcset = el.dataset.srcset;
+        }
+        lazyObs.unobserve(el);
       }
     });
   }, { rootMargin: "200px" });
-  document.querySelectorAll("img[data-src]").forEach((i) => imgObs.observe(i));
+
+  document.querySelectorAll("img[data-src]").forEach((img) => lazyObs.observe(img));
+  document.querySelectorAll("img[data-srcset]").forEach((img) => lazyObs.observe(img));
+}
+
+// ============ PERFORMANCE: Debounce utility ============
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
 }
 
 // ============ EASTER EGG ============
